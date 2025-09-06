@@ -1,0 +1,9 @@
+Flask==2.3.2
+dash==2.11.1
+pandas==2.0.3
+plotly==5.15.0
+pymongo==4.4.1
+requests==2.31.0
+dash-bootstrap-components==1.4.1
+hdfs3==0.3.1
+pyhive==0.6.5

@@ -1,0 +1,148 @@
+version: '3.8'
+
+networks:
+  bigdata-network:
+    driver: bridge
+
+volumes:
+  hadoop-master-data:
+  hadoop-secondary-data:
+  hadoop-worker1-data:
+  hadoop-worker2-data:
+  hadoop-worker3-data:
+  mongodb-data:
+
+services:
+  # Master Node (NameNode + ResourceManager + Spark Master)
+  hadoop-master:
+    build: ./hadoop-master
+    container_name: hadoop-master
+    hostname: hadoop-master
+    networks:
+      - bigdata-network
+    ports:
+      - "9870:9870"    # NameNode Web UI
+      - "8088:8088"    # ResourceManager Web UI
+      - "8080:8080"    # Spark Master Web UI
+      - "7077:7077"    # Spark Master Port
+      - "8020:8020"    # NameNode RPC
+    volumes:
+      - hadoop-master-data:/opt/hadoop/data
+      - ./data:/data
+    environment:
+      - HADOOP_CONF_DIR=/opt/hadoop/etc/hadoop
+      - SPARK_HOME=/opt/spark
+    command: ["/start-master.sh"]
+
+  # Secondary Master (Secondary NameNode)
+  hadoop-secondary:
+    build: ./hadoop-secondary
+    container_name: hadoop-secondary
+    hostname: hadoop-secondary
+    networks:
+      - bigdata-network
+    ports:
+      - "9868:9868"    # Secondary NameNode Web UI
+    volumes:
+      - hadoop-secondary-data:/opt/hadoop/data
+    environment:
+      - HADOOP_CONF_DIR=/opt/hadoop/etc/hadoop
+    depends_on:
+      - hadoop-master
+    command: ["/start-secondary.sh"]
+
+  # Worker Node 1
+  hadoop-worker1:
+    build: ./hadoop-worker
+    container_name: hadoop-worker1
+    hostname: hadoop-worker1
+    networks:
+      - bigdata-network
+    ports:
+      - "9864:9864"    # DataNode Web UI
+      - "8042:8042"    # NodeManager Web UI
+      - "8081:8081"    # Spark Worker Web UI
+    volumes:
+      - hadoop-worker1-data:/opt/hadoop/data
+    environment:
+      - HADOOP_CONF_DIR=/opt/hadoop/etc/hadoop
+      - SPARK_HOME=/opt/spark
+    depends_on:
+      - hadoop-master
+    command: ["/start-worker.sh"]
+
+  # Worker Node 2
+  hadoop-worker2:
+    build: ./hadoop-worker
+    container_name: hadoop-worker2
+    hostname: hadoop-worker2
+    networks:
+      - bigdata-network
+    ports:
+      - "9865:9864"    # DataNode Web UI
+      - "8043:8042"    # NodeManager Web UI
+      - "8082:8081"    # Spark Worker Web UI
+    volumes:
+      - hadoop-worker2-data:/opt/hadoop/data
+    environment:
+      - HADOOP_CONF_DIR=/opt/hadoop/etc/hadoop
+      - SPARK_HOME=/opt/spark
+    depends_on:
+      - hadoop-master
+    command: ["/start-worker.sh"]
+
+  # Worker Node 3
+  hadoop-worker3:
+    build: ./hadoop-worker
+    container_name: hadoop-worker3
+    hostname: hadoop-worker3
+    networks:
+      - bigdata-network
+    ports:
+      - "9866:9864"    # DataNode Web UI
+      - "8044:8042"    # NodeManager Web UI
+      - "8083:8081"    # Spark Worker Web UI
+    volumes:
+      - hadoop-worker3-data:/opt/hadoop/data
+    environment:
+      - HADOOP_CONF_DIR=/opt/hadoop/etc/hadoop
+      - SPARK_HOME=/opt/spark
+    depends_on:
+      - hadoop-master
+    command: ["/start-worker.sh"]
+
+  # MongoDB
+  mongodb:
+    image: mongo:6.0
+    container_name: mongodb
+    hostname: mongodb
+    networks:
+      - bigdata-network
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb-data:/data/db
+      - ./mongodb-init:/docker-entrypoint-initdb.d
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=admin
+      - MONGO_INITDB_ROOT_PASSWORD=admin123
+      - MONGO_INITDB_DATABASE=bigdata
+
+  # Application dynamique (Flask + Dash)
+  webapp:
+    build: ./webapp
+    container_name: webapp
+    hostname: webapp
+    networks:
+      - bigdata-network
+    ports:
+      - "5000:5000"    # Flask App
+      - "8050:8050"    # Dash App
+    volumes:
+      - ./data:/app/data
+    depends_on:
+      - hadoop-master
+      - mongodb
+    environment:
+      - HADOOP_MASTER=hadoop-master
+      - MONGODB_HOST=mongodb
