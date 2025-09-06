@@ -1,6 +1,5 @@
 db = db.getSiblingDB('bigdata');
 
-// Collection des ventes
 db.sales.insertMany([
     {
         "_id": ObjectId(),
@@ -37,7 +36,6 @@ db.sales.insertMany([
     }
 ]);
 
-// Collection des clients
 db.customers.insertMany([
     {
         "_id": "C001",
@@ -62,7 +60,6 @@ db.customers.insertMany([
     }
 ]);
 
-// Création d'index
 db.sales.createIndex({"customer_id": 1});
 db.sales.createIndex({"date": 1});
 db.sales.createIndex({"category": 1});
