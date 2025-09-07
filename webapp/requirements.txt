@@ -1,9 +1,16 @@
-Flask==2.3.2
-dash==2.11.1
+# webapp/requirements.txt - Versions compatibles testées
+Flask==2.3.3
+dash==2.14.1
 pandas==2.0.3
 plotly==5.15.0
-pymongo==4.4.1
+numpy==1.24.3
+pymongo==4.5.0
 requests==2.31.0
-dash-bootstrap-components==1.4.1
-hdfs3==0.3.1
-pyhive==0.6.5
+dash-bootstrap-components==1.5.0
+gunicorn==21.2.0
+Werkzeug==2.3.7
+
+# Dépendances additionnelles pour stabilité
+python-dateutil==2.8.2
+pytz==2023.3
+six==1.16.0
