@@ -1,4 +1,3 @@
-# hadoop-worker/start-worker.sh
 #!/bin/bash
 
 echo "Starting Hadoop Worker Node..."
@@ -40,12 +39,4 @@ while true; do
     fi
     
     sleep 30
-done
-
----
-
-
-
-
----
-
+    done
